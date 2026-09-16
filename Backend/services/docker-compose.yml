@@ -1,0 +1,128 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  auth-service:
+    build: ./auth-service
+    restart: always
+    ports:
+      - "5001:5001"
+    depends_on:
+      - mongo
+    env_file:
+      - ./auth-service/.env
+
+  patient-service:
+    build: ./patient-service
+    restart: always
+    ports:
+      - "5002:5002"
+    depends_on:
+      - mongo
+    env_file:
+      - ./patient-service/.env
+
+  doctor-service:
+    build: ./doctor-service
+    restart: always
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    env_file:
+      - ./doctor-service/.env
+
+  appointment-service:
+    build: ./appointment-service
+    restart: always
+    ports:
+      - "5003:5003"
+    depends_on:
+      - mongo
+      - auth-service
+      - doctor-service
+      - patient-service
+    env_file:
+      - ./appointment-service/.env
+
+  telemedicine-service:
+    build: ./telemedicine-service
+    restart: always
+    ports:
+      - "5004:5004"
+    depends_on:
+      - mongo
+    env_file:
+      - ./telemedicine-service/.env
+
+  payment-service:
+    build: ./payment-service
+    restart: always
+    ports:
+      - "5005:5005"
+    depends_on:
+      - mongo
+    env_file:
+      - ./payment-service/.env
+
+  prescription-service:
+    build: ./prescription-service
+    restart: always
+    ports:
+      - "5006:5006"
+    depends_on:
+      - mongo
+    env_file:
+      - ./prescription-service/.env
+
+  notification-service:
+    build: ./notification-service
+    restart: always
+    ports:
+      - "5007:5007"
+    depends_on:
+      - mongo
+    env_file:
+      - ./notification-service/.env
+
+  frontend:
+    build: ../../Frontend
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - auth-service
+      - patient-service
+      - doctor-service
+      - appointment-service
+      - telemedicine-service
+      - payment-service
+      - prescription-service
+      - notification-service
+    env_file:
+      - ../../Frontend/.env
+    volumes:
+      - ../../Frontend:/app
+      - /app/node_modules
+
+  ai-service:
+    build: ./ai-service
+    container_name: ai-service
+    restart: always
+    ports:
+      - "5008:5008"
+    depends_on:
+      - mongo
+    env_file:
+      - ./ai-service/.env
+    volumes:
+      - ./ai-service:/app
+      - /app/node_modules
+
+volumes:
+  mongo_data:
