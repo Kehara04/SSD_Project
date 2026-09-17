@@ -11,11 +11,18 @@ services:
     build: ./auth-service
     restart: always
     ports:
-      - "5001:5001"
+      - "127.0.0.1:5001:5001"
     depends_on:
       - mongo
     env_file:
       - ./auth-service/.env
+    secrets:
+      - auth_internal_secret
+    environment:
+      AUTH_INTERNAL_SECRET_FILE: /run/secrets/auth_internal_secret
+      INTERNAL_PORT: "5011"
+    expose:
+      - "5011"
 
   patient-service:
     build: ./patient-service
@@ -26,6 +33,11 @@ services:
       - mongo
     env_file:
       - ./patient-service/.env
+    secrets:
+      - auth_internal_secret
+    environment:
+      AUTH_INTERNAL_SECRET_FILE: /run/secrets/auth_internal_secret
+      AUTH_INTERNAL_SERVICE_URL: http://auth-service:5011
 
   doctor-service:
     build: ./doctor-service
@@ -36,6 +48,11 @@ services:
       - mongo
     env_file:
       - ./doctor-service/.env
+    secrets:
+      - auth_internal_secret
+    environment:
+      AUTH_INTERNAL_SECRET_FILE: /run/secrets/auth_internal_secret
+      AUTH_INTERNAL_SERVICE_URL: http://auth-service:5011
 
   appointment-service:
     build: ./appointment-service
@@ -49,6 +66,11 @@ services:
       - patient-service
     env_file:
       - ./appointment-service/.env
+    secrets:
+      - auth_internal_secret
+    environment:
+      AUTH_INTERNAL_SECRET_FILE: /run/secrets/auth_internal_secret
+      AUTH_INTERNAL_SERVICE_URL: http://auth-service:5011
 
   telemedicine-service:
     build: ./telemedicine-service
@@ -126,3 +148,7 @@ services:
 
 volumes:
   mongo_data:
+
+secrets:
+  auth_internal_secret:
+    file: ./.secrets/auth-internal-secret

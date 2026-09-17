@@ -19,6 +19,16 @@ spec:
           ports:
             - containerPort: 5000
           env:
+            - name: AUTH_INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: AUTH_INTERNAL_SECRET
+            - name: AUTH_INTERNAL_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: AUTH_INTERNAL_SERVICE_URL
             - name: PORT
               value: "5000"
             - name: MONGO_URI
