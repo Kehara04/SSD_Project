@@ -264,7 +264,6 @@ const confirmPaymentByIntentId = async (req, res, next) => {
     const { paymentIntentId } = req.params;
 
     let intent;
-    let isMock = paymentIntentId.startsWith("pi_test_mock_");
 
     let payment = await Payment.findOne({ stripePaymentIntentId: paymentIntentId });
 
@@ -272,29 +271,23 @@ const confirmPaymentByIntentId = async (req, res, next) => {
       return res.status(404).json({ message: "Payment record not found" });
     }
 
-    if (!isMock) {
-      try {
-        intent = await getStripe().paymentIntents.retrieve(paymentIntentId);
-      } catch (err) {
-        console.warn("Stripe fetch failed (using mock data):", err.message);
-        isMock = true;
-      }
-    }
-
-    if (isMock) {
-      intent = { status: "succeeded" };
+    try {
+      intent = await getStripe().paymentIntents.retrieve(paymentIntentId);
+    } catch (err) {
+      console.error("Stripe payment verification failed:", err.message);
+      return res.status(502).json({
+        message: "Payment verification failed",
+      });
     }
 
     if (intent.status === "succeeded" && payment.status !== "paid") {
       payment.status = "paid";
 
-      if (!isMock && intent.latest_charge) {
+      if (intent.latest_charge) {
         try {
           const chargeObj = await getStripe().charges.retrieve(intent.latest_charge);
           payment.receiptUrl = chargeObj.receipt_url || "";
         } catch (_) {}
-      } else if (isMock) {
-        payment.receiptUrl = "https://mock-receipt.example.com/" + paymentIntentId;
       }
 
       await payment.save();
