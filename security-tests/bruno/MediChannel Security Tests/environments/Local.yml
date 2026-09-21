@@ -1,0 +1,12 @@
+variables:
+  - name: authBaseUrl
+    value: http://localhost:5001
+
+  - name: patientBaseUrl
+    value: http://localhost:5002
+
+  - name: patientAReportId
+    value: 6aaf9fd46e1871a0dd4cb0e0
+
+  - name: patientBReportId
+    value: 6aaf963e6e1871a0dd4cb0df

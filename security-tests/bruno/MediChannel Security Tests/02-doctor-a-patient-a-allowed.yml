@@ -1,0 +1,24 @@
+info:
+  name: 02-doctor-a-patient-a-allowed
+  type: http
+  seq: 3
+
+http:
+  method: GET
+  url: "{{patientBaseUrl}}/api/reports/doctor/{{patientAReportId}}"
+  headers:
+    - name: Authorization
+      value: Bearer {{doctorAToken}}
+  auth: inherit
+
+runtime:
+  variables:
+    - name: doctorAToken
+      value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5ZDI0NTFmMDA1ZjBjMGNmNGRmYzNhNCIsImVtYWlsIjoidmloYXJhd2lqZXNpbmdoZUBnbWFpbC5jb20iLCJyb2xlIjoiZG9jdG9yIiwiaWF0IjoxNzkwMDE2NzM3LCJleHAiOjE3OTA2MjE1Mzd9.ocB4g7YdZ-nmH_5x6-SP_L5PZh7Nig47SVHVsEoZOVM
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
