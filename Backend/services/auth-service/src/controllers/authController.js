@@ -179,52 +179,92 @@ const registerDoctor = async (req, res, next) => {
   }
 };
 
+// const registerAdmin = async (req, res, next) => {
+//   try {
+//     const { name, email, password, phone, adminSecret } = req.body;
+
+//     if (!name || !email || !password || !adminSecret) {
+//       return res.status(400).json({
+//         message: "Name, email, password, and adminSecret are required",
+//       });
+//     }
+
+//     if (adminSecret !== "ADMIN123") {
+//       return res.status(403).json({ message: "Invalid admin secret" });
+//     }
+
+//     const existingUser = await User.findOne({ email: email.toLowerCase() });
+//     if (existingUser) {
+//       return res.status(409).json({ message: "Email already registered" });
+//     }
+
+//     const hashedPassword = await bcrypt.hash(password, 10);
+//     const nextUserId = await getNextSequence("userId");
+
+//     const user = await User.create({
+//       userId: nextUserId,
+//       name,
+//       email: email.toLowerCase(),
+//       password: hashedPassword,
+//       phone: phone || "",
+//       role: "admin",
+//       doctorVerificationStatus: "not_applicable",
+//     });
+
+//     const token = generateToken(user);
+
+//     return res.status(201).json({
+//       message: "Admin registered successfully",
+//       token,
+//       user: {
+//         id: user._id,
+//         userId: user.userId,
+//         name: user.name,
+//         nic: user.nic || "",
+//         email: user.email,
+//         phone: user.phone,
+//         role: user.role,
+//         doctorVerificationStatus: user.doctorVerificationStatus,
+//       },
+//     });
+//   } catch (error) {
+//     next(error);
+//   }
+// };
+
 const registerAdmin = async (req, res, next) => {
   try {
-    const { name, email, password, phone, adminSecret } = req.body;
+    const { name, email, password, phone } = req.body;
 
-    if (!name || !email || !password || !adminSecret) {
+    if (!name || !email || !password) {
       return res.status(400).json({
-        message: "Name, email, password, and adminSecret are required",
+        message: "Name, email, and password are required",
       });
     }
 
-    if (adminSecret !== "ADMIN123") {
-      return res.status(403).json({ message: "Invalid admin secret" });
-    }
+    const existingUser = await User.findOne({ email });
 
-    const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
-      return res.status(409).json({ message: "Email already registered" });
+      return res.status(409).json({
+        message: "User already exists",
+      });
     }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const nextUserId = await getNextSequence("userId");
 
     const user = await User.create({
-      userId: nextUserId,
       name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      phone: phone || "",
+      email,
+      password,
+      phone,
       role: "admin",
-      doctorVerificationStatus: "not_applicable",
     });
-
-    const token = generateToken(user);
 
     return res.status(201).json({
       message: "Admin registered successfully",
-      token,
       user: {
         id: user._id,
-        userId: user.userId,
         name: user.name,
-        nic: user.nic || "",
         email: user.email,
-        phone: user.phone,
         role: user.role,
-        doctorVerificationStatus: user.doctorVerificationStatus,
       },
     });
   } catch (error) {
