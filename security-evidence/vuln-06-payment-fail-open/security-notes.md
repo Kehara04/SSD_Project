@@ -312,3 +312,31 @@ This change does not by itself redesign all development or testing mock-payment 
 VULN-05, which concerns Stripe webhook signature verification, is a separate issue and should be documented and tested independently.
 
 The MongoDB records and payment identifiers used for this evidence are test-only values. No real payment information, Stripe secrets, passwords, access tokens, or personal data should be included in committed screenshots or documentation.
+
+## Additional security verification using Burp Suite
+
+Burp Suite Community Edition Repeater was used to repeat
+the original payment verification attack against the secured
+payment service.
+
+The request targeted:
+
+GET /api/payments/confirm/pi_failopen_demo_001
+
+A valid test-user Bearer token was supplied.
+
+The application returned HTTP 502 Bad Gateway with:
+
+{
+  "message": "Payment verification failed"
+}
+
+The test confirmed that Stripe verification failure was
+rejected instead of being converted into mock payment success.
+
+The payment record was subsequently checked in MongoDB
+to confirm that its status remained pending.
+
+Evidence:
+- after-fix/burp-stripe-verification-rejected.png
+- after-fix/burp-payment-remains-pending.png
