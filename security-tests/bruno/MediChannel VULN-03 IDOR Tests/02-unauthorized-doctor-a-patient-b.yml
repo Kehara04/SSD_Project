@@ -1,5 +1,5 @@
 info:
-  name: 02-doctor-a-patient-b-idor
+  name: 02-unauthorized-doctor-a-patient-b
   type: http
   seq: 2
 
@@ -10,6 +10,14 @@ http:
     - name: Authorization
       value: Bearer {{doctorAToken}}
   auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Unrelated doctor cannot access patient report", function () {
+          expect(res.getStatus()).to.equal(403);
+        });
 
 settings:
   encodeUrl: true

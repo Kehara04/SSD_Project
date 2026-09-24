@@ -1,5 +1,5 @@
 info:
-  name: 03-doctor-a-patient-b-open-idor
+  name: 03-unauthorized-report-open
   type: http
   seq: 3
 
@@ -10,6 +10,14 @@ http:
     - name: Authorization
       value: Bearer {{doctorAToken}}
   auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Unauthorized medical report opening is blocked", function () {
+          expect(res.getStatus()).to.equal(403);
+        });
 
 settings:
   encodeUrl: true

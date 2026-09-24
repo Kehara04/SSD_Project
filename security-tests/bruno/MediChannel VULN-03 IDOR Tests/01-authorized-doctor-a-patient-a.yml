@@ -1,5 +1,5 @@
 info:
-  name: 01-doctor-a-patient-a-allowed
+  name: 01-authorized-doctor-a-patient-a
   type: http
   seq: 1
 
@@ -10,6 +10,14 @@ http:
     - name: Authorization
       value: Bearer {{doctorAToken}}
   auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Authorized doctor can access related patient report", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
 
 settings:
   encodeUrl: true
