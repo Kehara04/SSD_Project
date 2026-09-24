@@ -1,10 +1,11 @@
+const { getInternalServiceHeaders } = require("../utils/internalServiceAuth");
 const MedicalReport = require("../models/MedicalReport");
 const getNextSequence = require("../utils/getNextSequence");
 const { uploadBufferToCloudinary } = require("../utils/uploadToCloudinary");
 const cloudinary = require("../config/cloudinary");
 
-const AUTH_SERVICE_URL =
-  process.env.AUTH_SERVICE_URL || "http://localhost:5001";
+const AUTH_INTERNAL_SERVICE_URL =
+  process.env.AUTH_INTERNAL_SERVICE_URL || "http://localhost:5011";
 
 const fetchJson = async (url, options = {}) => {
   const controller = new AbortController();
@@ -16,6 +17,7 @@ const fetchJson = async (url, options = {}) => {
       headers: {
         "Content-Type": "application/json",
         ...(options.headers || {}),
+        ...getInternalServiceHeaders(),
       },
       signal: controller.signal,
     });
@@ -42,12 +44,12 @@ const fetchJson = async (url, options = {}) => {
 };
 
 const getUserById = async (userId) => {
-  return fetchJson(`${AUTH_SERVICE_URL}/api/internal/users/${userId}`);
+  return fetchJson(`${AUTH_INTERNAL_SERVICE_URL}/api/internal/users/${userId}`);
 };
 
 const getPatientByNic = async (nic) => {
   return fetchJson(
-    `${AUTH_SERVICE_URL}/api/internal/users/by-nic/${encodeURIComponent(nic)}`
+    `${AUTH_INTERNAL_SERVICE_URL}/api/internal/users/by-nic/${encodeURIComponent(nic)}`
   );
 };
 

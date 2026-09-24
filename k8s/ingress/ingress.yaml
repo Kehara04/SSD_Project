@@ -4,6 +4,8 @@ metadata:
   name: medichannel-ingress
   namespace: medichannel
 spec:
+  # Internal APIs use private listeners (auth:5011), never ingress backends.
+  # Do not add /api/internal or a catch-all route to a backend service.
   ingressClassName: nginx
   rules:
     - host: localhost

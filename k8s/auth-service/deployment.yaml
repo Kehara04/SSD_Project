@@ -18,7 +18,15 @@ spec:
           image: kswijesinghe/auth-service:latest
           ports:
             - containerPort: 5001
+            - containerPort: 5011
           env:
+            - name: AUTH_INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: AUTH_INTERNAL_SECRET
+            - name: INTERNAL_PORT
+              value: "5011"
             - name: PORT
               value: "5001"
             - name: MONGO_URI
