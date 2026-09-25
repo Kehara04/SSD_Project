@@ -272,37 +272,62 @@ const registerAdmin = async (req, res, next) => {
   }
 };
 
+
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
-        message: "Email and password are required",
+        message:
+          "Email and password are required",
       });
     }
 
-    const user = await User.findOne({ email: email.toLowerCase() }).select("+password");
+    const user = await User.findOne({
+      email: email.toLowerCase(),
+    }).select("+password");
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
     }
 
     if (!user.isActive) {
-      return res.status(403).json({ message: "User account is deactivated" });
+      return res.status(403).json({
+        message:
+          "User account is deactivated",
+      });
     }
 
-    const isPasswordMatch = await bcrypt.compare(password, user.password);
+    // Google-only users have no local password.
+    // Reject password login for those accounts.
+    if (!user.password) {
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
+    }
+
+    const isPasswordMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
     if (!isPasswordMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
+      return res.status(401).json({
+        message: "Invalid credentials",
+      });
     }
 
     const token = generateToken(user);
 
     return res.status(200).json({
       message: "Login successful",
+
       token,
+
       user: {
         id: user._id,
         userId: user.userId,
@@ -312,13 +337,16 @@ const login = async (req, res, next) => {
         phone: user.phone,
         role: user.role,
         isActive: user.isActive,
-        doctorVerificationStatus: user.doctorVerificationStatus,
+
+        doctorVerificationStatus:
+          user.doctorVerificationStatus,
       },
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 const me = async (req, res, next) => {
   try {

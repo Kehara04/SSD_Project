@@ -244,3 +244,230 @@
     order: 2;
   }
 }
+
+
+/* ==========================================
+   GOOGLE OPENID CONNECT LOGIN SECTION
+========================================== */
+
+.google-auth-section {
+  margin-top: 26px;
+  padding-top: 22px;
+
+  border-top: 1px solid #e5ecef;
+}
+
+/* Section heading */
+
+.google-auth-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 24px;
+}
+
+.google-auth-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  background: #e7f5f2;
+  color: #087f73;
+
+  border-radius: 12px;
+}
+
+.google-auth-heading h3 {
+  margin: 0;
+
+  font-size: 15px;
+  font-weight: 700;
+
+  color: #173f40;
+  letter-spacing: -0.2px;
+}
+
+.google-auth-heading p {
+  margin: 4px 0 0;
+
+  font-size: 12px;
+  line-height: 1.5;
+
+  color: #718096;
+}
+
+/* Divider */
+
+.google-auth-divider {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin-bottom: 20px;
+}
+
+.google-auth-divider span {
+  flex: 1;
+  height: 1px;
+
+  background: #e2e8f0;
+}
+
+.google-auth-divider p {
+  margin: 0;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 1.2px;
+
+  color: #94a3b8;
+
+  white-space: nowrap;
+}
+
+/* Google sign-in button */
+
+.google-signin-button {
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  min-height: 52px;
+
+  gap: 12px;
+
+  padding: 12px 18px;
+
+  background: #ffffff;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+
+  color: #253b47;
+
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.google-logo {
+  flex-shrink: 0;
+}
+
+.google-button-arrow {
+  position: absolute;
+  right: 17px;
+
+  color: #94a3b8;
+
+  transition:
+    transform 0.2s ease,
+    color 0.2s ease;
+}
+
+/* Hover */
+
+.google-signin-button:hover {
+  background: #f5faf9;
+
+  border-color: #087f73;
+
+  box-shadow:
+    0 4px 14px rgba(8, 127, 115, 0.09);
+
+  transform: translateY(-1px);
+}
+
+.google-signin-button:hover .google-button-arrow {
+  color: #087f73;
+
+  transform: translateX(3px);
+}
+
+/* Keyboard accessibility */
+
+.google-signin-button:focus-visible {
+  outline: 3px solid rgba(8, 127, 115, 0.3);
+
+  outline-offset: 3px;
+}
+
+/* Active */
+
+.google-signin-button:active {
+  transform: translateY(0);
+}
+
+/* Security footer */
+
+.google-auth-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 6px;
+
+  margin-top: 15px;
+
+  color: #718096;
+
+  font-size: 11px;
+}
+
+.google-auth-footer svg {
+  color: #087f73;
+  flex-shrink: 0;
+}
+
+/* Mobile responsiveness */
+
+@media (max-width: 480px) {
+
+  .google-auth-heading h3 {
+    font-size: 14px;
+  }
+
+  .google-auth-heading p {
+    font-size: 11px;
+  }
+
+  .google-signin-button {
+    min-height: 50px;
+    font-size: 13px;
+  }
+
+  .google-auth-footer {
+    font-size: 10px;
+  }
+
+}
+
+/* Reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .google-signin-button,
+  .google-button-arrow {
+    transition: none;
+  }
+
+}
