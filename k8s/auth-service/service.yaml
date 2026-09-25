@@ -7,7 +7,10 @@ spec:
   selector:
     app: auth-service
   ports:
-    - port: 5001
+    - name: public
+      port: 5001
       targetPort: 5001
-      nodePort: 30011
-  type: NodePort
+    - name: internal
+      port: 5011
+      targetPort: 5011
+  type: ClusterIP

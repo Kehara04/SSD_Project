@@ -2,6 +2,15 @@ const crypto = require("crypto");
 const Session = require("../models/Session");
 const axios = require("axios");
 
+// Match the verified JWT identity to the participant for that role.
+const isParticipant = (user, resource) => {
+  if (!user?.id) return false;
+  const participantId = user.role === "patient"
+    ? resource.patientId
+    : user.role === "doctor" ? resource.doctorId : null;
+  return participantId != null && String(participantId) === String(user.id);
+};
+
 const getNotificationServiceUrl = () =>
   process.env.NOTIFICATION_SERVICE_URL || "http://localhost:5007";
 
@@ -94,6 +103,11 @@ const createSession = async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
+    // Authorize against the trusted appointment, never caller-supplied IDs.
+    if (!isParticipant(req.user, appointment)) {
+      return res.status(403).json({ message: "Forbidden: Access denied" });
+    }
+
     if (
       String(appointment.doctorId) !== String(doctorId) ||
       String(appointment.patientId) !== String(patientId)
@@ -105,6 +119,9 @@ const createSession = async (req, res) => {
 
     const existingSession = await Session.findOne({ appointmentId });
     if (existingSession) {
+      if (!isParticipant(req.user, existingSession)) {
+        return res.status(403).json({ message: "Forbidden: Access denied" });
+      }
       return res.status(200).json(existingSession);
     }
 
@@ -113,8 +130,8 @@ const createSession = async (req, res) => {
 
     const session = await Session.create({
       appointmentId,
-      doctorId,
-      patientId,
+      doctorId: String(appointment.doctorId),
+      patientId: String(appointment.patientId),
       roomName,
       meetingUrl,
       scheduledStartTime,
@@ -137,6 +154,10 @@ const getSessionByAppointment = async (req, res) => {
       return res.status(404).json({ message: "Session not found" });
     }
 
+    if (!isParticipant(req.user, session)) {
+      return res.status(403).json({ message: "Forbidden: Access denied" });
+    }
+
     return res.json(session);
   } catch (error) {
     return res.status(500).json({ message: error.message });
@@ -150,6 +171,10 @@ const joinSession = async (req, res) => {
 
     if (!session) {
       return res.status(404).json({ message: "Session not found" });
+    }
+
+    if (!isParticipant(req.user, session)) {
+      return res.status(403).json({ message: "Forbidden: Access denied" });
     }
 
     session.status = "active";
@@ -176,6 +201,10 @@ const endSession = async (req, res) => {
 
     if (!session) {
       return res.status(404).json({ message: "Session not found" });
+    }
+
+    if (!isParticipant(req.user, session)) {
+      return res.status(403).json({ message: "Forbidden: Access denied" });
     }
 
     session.status = "completed";

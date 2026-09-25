@@ -1,3 +1,4 @@
+const { getInternalServiceHeaders } = require("../utils/internalServiceAuth");
 // const Appointment = require("../models/Appointment");
 // const axios = require("axios");
 
@@ -1785,7 +1786,10 @@ const createAppointment = async (req, res, next) => {
 
     let patient;
     try {
-      const response = await axios.get(`${AUTH_SERVICE_URL}/api/internal/users/${patientId}`);
+      const response = await axios.get(
+        `${process.env.AUTH_INTERNAL_SERVICE_URL || "http://localhost:5011"}/api/internal/users/${patientId}`,
+        { headers: getInternalServiceHeaders() }
+      );
       patient = response.data?.user || response.data;
 
       if (!patient || patient.role !== "patient" || patient.isActive === false) {

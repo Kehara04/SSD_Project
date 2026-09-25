@@ -1,4 +1,5 @@
 const express = require("express");
+const { authenticate, authorize } = require("../middleware/authMiddleware");
 const {
   createSession,
   getSessionByAppointment,
@@ -7,6 +8,9 @@ const {
 } = require("../controllers/sessionController");
 
 const router = express.Router();
+
+router.use(authenticate);
+router.use(authorize("patient", "doctor"));
 
 router.post("/", createSession);
 router.get("/appointment/:appointmentId", getSessionByAppointment);
