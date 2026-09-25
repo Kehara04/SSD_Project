@@ -1,4 +1,5 @@
 const express = require("express");
+const { authenticateService } = require("../middleware/serviceAuth");
 const {
   getUserByIdInternal,
   updateUserBasicInternal,
@@ -8,6 +9,7 @@ const {
 } = require("../controllers/internalController");
 
 const router = express.Router();
+router.use(authenticateService);
 
 router.get("/users/:id", getUserByIdInternal);
 router.patch("/users/:id/basic", updateUserBasicInternal);

@@ -7,11 +7,13 @@ const userSchema = new mongoose.Schema(
       unique: true,
       index: true,
     },
+
     name: {
       type: String,
       required: true,
       trim: true,
     },
+
     nic: {
       type: String,
       unique: true,
@@ -19,6 +21,7 @@ const userSchema = new mongoose.Schema(
       trim: true,
       uppercase: true,
     },
+
     email: {
       type: String,
       required: true,
@@ -26,31 +29,63 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+
+    // Local accounts require a password.
+    // Google-only patients do not have a local password.
     password: {
       type: String,
-      required: true,
+
+      required: function () {
+        return !this.googleSub;
+      },
+
       minlength: 6,
       select: false,
     },
+
+    // Stable Google identity identifier.
+    googleSub: {
+      type: String,
+      unique: true,
+      sparse: true,
+      select: false,
+    },
+
     phone: {
       type: String,
       default: "",
       trim: true,
     },
+
     role: {
       type: String,
-      enum: ["patient", "doctor", "admin"],
+      enum: [
+        "patient",
+        "doctor",
+        "admin",
+      ],
       required: true,
     },
+
     isActive: {
       type: Boolean,
       default: true,
     },
+
     doctorVerificationStatus: {
       type: String,
-      enum: ["pending", "approved", "rejected", "not_applicable"],
+
+      enum: [
+        "pending",
+        "approved",
+        "rejected",
+        "not_applicable",
+      ],
+
       default: function () {
-        return this.role === "doctor" ? "pending" : "not_applicable";
+        return this.role === "doctor"
+          ? "pending"
+          : "not_applicable";
       },
     },
   },
@@ -59,4 +94,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model(
+  "User",
+  userSchema
+);

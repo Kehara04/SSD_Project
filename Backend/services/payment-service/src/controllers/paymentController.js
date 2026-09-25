@@ -184,23 +184,27 @@ const stripeWebhook = async (req, res, next) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event;
 
+  if (
+    !webhookSecret ||
+    webhookSecret === "whsec_placeholder_replace_with_real_secret"
+  ) {
+    return res.status(500).json({ message: "Webhook unavailable" });
+  }
+
+  const signature = req.headers["stripe-signature"];
+  if (!signature) {
+    return res.status(400).json({ message: "Invalid webhook signature" });
+  }
+
   try {
-    if (
-      webhookSecret &&
-      webhookSecret !== "whsec_placeholder_replace_with_real_secret"
-    ) {
-      const signature = req.headers["stripe-signature"];
-      event = getStripe().webhooks.constructEvent(
-        req.body,
-        signature,
-        webhookSecret
-      );
-    } else {
-      event = JSON.parse(req.body.toString());
-    }
+    event = getStripe().webhooks.constructEvent(
+      req.body,
+      signature,
+      webhookSecret
+    );
   } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).json({ message: `Webhook error: ${err.message}` });
+    console.error("Webhook signature verification failed");
+    return res.status(400).json({ message: "Invalid webhook signature" });
   }
 
   try {
