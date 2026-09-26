@@ -15,25 +15,29 @@ const PaymentSuccess = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const verifyPayment = async () => {
+    if (!paymentIntentId) {
+      setError("No transaction ID found. Please check your appointments.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const { data } = await paymentAPI.get(`/payments/confirm/${paymentIntentId}`);
+      setPayment(data);
+    } catch (err) {
+      setError(err.response?.data?.message || "Failed to verify payment");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const confirm = async () => {
-      if (!paymentIntentId) {
-        setError("No transaction ID found. Please check your appointments.");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const { data } = await paymentAPI.get(`/payments/confirm/${paymentIntentId}`);
-        setPayment(data);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to verify payment");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    confirm();
+    verifyPayment();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [paymentIntentId]);
 
   const formatAmount = (amount, currency) => {
@@ -45,11 +49,35 @@ const PaymentSuccess = () => {
     }).format(amount);
   };
 
+  const isPaid = payment?.status === "paid";
+  
+  let pageTitle = "Verifying Payment...";
+  let pageSubtitle = "Please wait while we verify your transaction.";
+
+  if (error) {
+    pageTitle = "Payment Verification Failed";
+    pageSubtitle = "We encountered an error while verifying your payment.";
+  } else if (!loading && payment) {
+    if (isPaid) {
+      pageTitle = "Payment Successful 🎉";
+      pageSubtitle = "Your consultation fee has been paid. Here is your receipt.";
+    } else if (payment.status === "pending") {
+      pageTitle = "Payment Pending ⏳";
+      pageSubtitle = "Your payment is currently being processed.";
+    } else if (payment.status === "failed") {
+      pageTitle = "Payment Failed ❌";
+      pageSubtitle = "Your payment transaction was not successful.";
+    } else {
+      pageTitle = `Payment Status: ${payment.status}`;
+      pageSubtitle = "Please check your payment status.";
+    }
+  }
+
   return (
     <DashboardLayout>
       <PageHeader
-        title="Payment Successful 🎉"
-        subtitle="Your consultation fee has been paid. Here is your receipt."
+        title={pageTitle}
+        subtitle={pageSubtitle}
       />
 
       {loading && (
@@ -64,13 +92,31 @@ const PaymentSuccess = () => {
       {error && (
         <div className="section-card">
           <div className="alert-error" style={{ marginBottom: "1rem" }}>{error}</div>
-          <button className="btn-secondary" onClick={() => navigate("/patient/appointments")}>
-            Back to Appointments
-          </button>
+          <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <button className="btn-primary" onClick={verifyPayment}>
+              Retry Verification
+            </button>
+            <button className="btn-secondary" onClick={() => navigate("/patient/appointments")}>
+              Back to Appointments
+            </button>
+          </div>
         </div>
       )}
 
-      {!loading && payment && (
+      {!loading && payment && !isPaid && (
+        <div className="section-card" style={{ textAlign: "center", padding: "2.5rem" }}>
+          <p style={{ marginTop: "1rem", color: "var(--text-secondary)", fontSize: "1.1rem" }}>
+            The current status of your payment is <strong style={{ textTransform: "capitalize" }}>{payment.status}</strong>.
+          </p>
+          <div style={{ display: "flex", justifyContent: "center", marginTop: "1.5rem" }}>
+            <button className="btn-secondary" onClick={() => navigate("/patient/appointments")}>
+              Back to Appointments
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!loading && payment && isPaid && (
         <div className="section-card receipt-card" style={{ maxWidth: "600px", margin: "0 auto" }}>
           {/* Receipt Header */}
           <div style={{

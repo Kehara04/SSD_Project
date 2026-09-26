@@ -18,3 +18,9 @@ variables:
   - name: patientBNic
     value: "200269503642"
     description: ""
+  - name: patientAId
+    value: 69d2440a005f0c0cf4dfc392
+    description: ""
+  - name: patientBId
+    value: 69e0968e263e81f1a513f242
+    description: ""
