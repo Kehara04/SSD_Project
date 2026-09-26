@@ -19,6 +19,16 @@ spec:
           ports:
             - containerPort: 5003
           env:
+            - name: AUTH_INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: AUTH_INTERNAL_SECRET
+            - name: AUTH_INTERNAL_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: AUTH_INTERNAL_SERVICE_URL
             - name: PORT
               value: "5003"
             - name: MONGO_URI

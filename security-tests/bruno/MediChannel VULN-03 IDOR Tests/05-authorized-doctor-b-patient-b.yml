@@ -1,0 +1,27 @@
+info:
+  name: 05-authorized-doctor-b-patient-b
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{patientBaseUrl}}/api/reports/doctor/{{patientAReportId}}"
+  headers:
+    - name: Authorization
+      value: Bearer {{doctorBToken}}
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Doctor B can access authorized patient report", function () {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false

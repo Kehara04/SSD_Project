@@ -184,23 +184,27 @@ const stripeWebhook = async (req, res, next) => {
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
   let event;
 
+  if (
+    !webhookSecret ||
+    webhookSecret === "whsec_placeholder_replace_with_real_secret"
+  ) {
+    return res.status(500).json({ message: "Webhook unavailable" });
+  }
+
+  const signature = req.headers["stripe-signature"];
+  if (!signature) {
+    return res.status(400).json({ message: "Invalid webhook signature" });
+  }
+
   try {
-    if (
-      webhookSecret &&
-      webhookSecret !== "whsec_placeholder_replace_with_real_secret"
-    ) {
-      const signature = req.headers["stripe-signature"];
-      event = getStripe().webhooks.constructEvent(
-        req.body,
-        signature,
-        webhookSecret
-      );
-    } else {
-      event = JSON.parse(req.body.toString());
-    }
+    event = getStripe().webhooks.constructEvent(
+      req.body,
+      signature,
+      webhookSecret
+    );
   } catch (err) {
-    console.error("Webhook signature verification failed:", err.message);
-    return res.status(400).json({ message: `Webhook error: ${err.message}` });
+    console.error("Webhook signature verification failed");
+    return res.status(400).json({ message: "Invalid webhook signature" });
   }
 
   try {
@@ -264,7 +268,6 @@ const confirmPaymentByIntentId = async (req, res, next) => {
     const { paymentIntentId } = req.params;
 
     let intent;
-    let isMock = paymentIntentId.startsWith("pi_test_mock_");
 
     let payment = await Payment.findOne({ stripePaymentIntentId: paymentIntentId });
 
@@ -272,29 +275,23 @@ const confirmPaymentByIntentId = async (req, res, next) => {
       return res.status(404).json({ message: "Payment record not found" });
     }
 
-    if (!isMock) {
-      try {
-        intent = await getStripe().paymentIntents.retrieve(paymentIntentId);
-      } catch (err) {
-        console.warn("Stripe fetch failed (using mock data):", err.message);
-        isMock = true;
-      }
-    }
-
-    if (isMock) {
-      intent = { status: "succeeded" };
+    try {
+      intent = await getStripe().paymentIntents.retrieve(paymentIntentId);
+    } catch (err) {
+      console.error("Stripe payment verification failed:", err.message);
+      return res.status(502).json({
+        message: "Payment verification failed",
+      });
     }
 
     if (intent.status === "succeeded" && payment.status !== "paid") {
       payment.status = "paid";
 
-      if (!isMock && intent.latest_charge) {
+      if (intent.latest_charge) {
         try {
           const chargeObj = await getStripe().charges.retrieve(intent.latest_charge);
           payment.receiptUrl = chargeObj.receipt_url || "";
         } catch (_) {}
-      } else if (isMock) {
-        payment.receiptUrl = "https://mock-receipt.example.com/" + paymentIntentId;
       }
 
       await payment.save();

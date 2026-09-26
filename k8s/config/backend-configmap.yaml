@@ -4,6 +4,7 @@ metadata:
   name: backend-config
   namespace: medichannel
 data:
+  AUTH_INTERNAL_SERVICE_URL: "http://auth-service:5011"
   AUTH_SERVICE_URL: "http://auth-service:5001"
   DOCTOR_SERVICE_URL: "http://doctor-service:5000"
   APPOINTMENT_SERVICE_URL: "http://appointment-service:5003"

@@ -1,0 +1,10 @@
+opencollection: 1.0.0
+
+info:
+  name: MediChannel VULN-03 IDOR Tests
+bundled: false
+extensions:
+  bruno:
+    ignore:
+      - node_modules
+      - .git
