@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: auth-service-ingress
+  namespace: medichannel
+spec:
+  podSelector:
+    matchLabels:
+      app: auth-service
+  policyTypes:
+    - Ingress
+  ingress:
+    # Public API remains available to ingress and existing API consumers.
+    - ports:
+        - protocol: TCP
+          port: 5001
+    # Only these same-namespace backend workloads may reach the internal API.
+    - from:
+        - podSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - patient-service
+                  - doctor-service
+                  - appointment-service
+      ports:
+        - protocol: TCP
+          port: 5011
