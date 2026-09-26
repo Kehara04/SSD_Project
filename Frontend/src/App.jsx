@@ -36,7 +36,16 @@ function App() {
       <Route path="/auth/google/success" element={<GoogleAuthSuccess />}/>
       <Route path="/register/patient" element={<RegisterPatient />} />
       <Route path="/register/doctor" element={<RegisterDoctor />} />
-      <Route path="/register/admin" element={<RegisterAdmin />} />
+      <Route
+        path="/register/admin"
+        element={
+          <ProtectedRoute>
+            <RoleRoute allowedRoles={["admin"]}>
+              <RegisterAdmin />
+            </RoleRoute>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/doctors" element={<DoctorDirectory />} />
 
       <Route

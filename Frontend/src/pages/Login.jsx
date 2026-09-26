@@ -556,31 +556,7 @@ const Login = () => {
                   </Link>
                 </p>
 
-                <p
-                  style={{
-                    fontSize: "0.825rem",
 
-                    color:
-                      "var(--text-secondary)",
-                  }}
-                >
-                  Admin?{" "}
-
-                  <Link
-                    to="/register/admin"
-
-                    style={{
-                      color:
-                        "var(--brand-600)",
-
-                      fontWeight: 500,
-
-                      textDecoration: "none",
-                    }}
-                  >
-                    Create admin account
-                  </Link>
-                </p>
               </div>
             </div>
           </div>
