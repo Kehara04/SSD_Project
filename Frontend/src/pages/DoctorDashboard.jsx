@@ -112,6 +112,7 @@ const DoctorDashboard = () => {
   const [patientLookupNic, setPatientLookupNic] = useState("");
   const [patientReportsData, setPatientReportsData] = useState(null);
   const [reportsLoading, setReportsLoading] = useState(false);
+  const [reportError, setReportError] = useState("");
 
   const activeLocations = useMemo(
     () =>
@@ -339,40 +340,75 @@ const DoctorDashboard = () => {
     }
   };
 
+  // Keep report-specific errors within the Patient Reports section.
+  const getReportErrorMessage = (err) => {
+    const status = err.response?.status;
+
+    if (status === 401) {
+      return "Your session is invalid or has expired. Please log in again to access medical reports.";
+    }
+    if (status === 403) {
+      return "You can only view medical reports for patients who have an approved or completed appointment with you. Please check the patient's NIC or appointment details and try again.";
+    }
+    if (status === 404) {
+      return "The requested patient or medical report could not be found.";
+    }
+    if (status >= 500) {
+      return "Medical reports are temporarily unavailable. Please try again later.";
+    }
+    if (!err.response) {
+      return "Unable to connect to the medical report service. Please check your connection and try again.";
+    }
+    return "Unable to retrieve medical reports. Please try again.";
+  };
+
   const handleSearchPatientReports = async (e) => {
     e.preventDefault();
     setMessage("");
     setError("");
+    setReportError("");
     setPatientReportsData(null);
 
-    if (!patientLookupNic.trim()) {
-      setError("Please enter a patient NIC.");
+    const normalizedNic = patientLookupNic.trim().toUpperCase();
+    if (!normalizedNic) {
+      setReportError("Please enter a patient NIC.");
       return;
     }
 
     setReportsLoading(true);
-
     try {
-      const normalizedNic = patientLookupNic.trim().toUpperCase();
-      const { data } = await patientAPI.get(`/reports/doctor/patient/nic/${normalizedNic}`);
+      const { data } = await patientAPI.get(
+        `/reports/doctor/patient/nic/${encodeURIComponent(normalizedNic)}`
+      );
       setPatientReportsData(data);
+      setReportError("");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to load patient reports");
+      setPatientReportsData(null);
+      setReportError(getReportErrorMessage(err));
     } finally {
       setReportsLoading(false);
     }
   };
 
   const handleOpenDoctorReport = async (id) => {
+    setReportError("");
+    setError("");
+
     try {
-      const { data } = await patientAPI.get(`/reports/doctor/${id}`);
-      if (data?.cloudinarySecureUrl) {
-        window.open(data.cloudinarySecureUrl, "_blank", "noopener,noreferrer");
-      } else {
-        setError("Report URL not found.");
+      // The backend must authorize the doctor for this report before returning its URL.
+      const { data } = await patientAPI.get(
+        `/reports/doctor/${encodeURIComponent(id)}`
+      );
+      if (!data?.cloudinarySecureUrl) {
+        setReportError("The requested medical report file is unavailable.");
+        return;
       }
+      window.open(data.cloudinarySecureUrl, "_blank", "noopener,noreferrer");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to open report");
+      if (err.response?.status === 403) {
+        setPatientReportsData(null);
+      }
+      setReportError(getReportErrorMessage(err));
     }
   };
 
@@ -929,6 +965,68 @@ const DoctorDashboard = () => {
             {reportsLoading ? "Searching…" : "Search Reports"}
           </button>
         </form>
+
+        {/* Medical-report authorization and request errors */}
+        {reportError && (
+          <div
+            role="alert"
+            aria-live="assertive"
+            style={{
+              display: "flex",
+              alignItems: "flex-start",
+              gap: "12px",
+              padding: "14px 16px",
+              marginBottom: "18px",
+              background: "#FFF5F5",
+              border: "1px solid #FECACA",
+              borderLeft: "4px solid #DC2626",
+              borderRadius: "10px",
+              color: "#991B1B",
+              fontSize: "13px",
+              lineHeight: 1.6,
+            }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              style={{ flexShrink: 0, marginTop: "1px" }}
+              aria-hidden="true"
+            >
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" />
+              <path d="M12 8v5" />
+              <path d="M12 17h.01" />
+            </svg>
+            <div style={{ flex: 1 }}>
+              <strong style={{ display: "block", marginBottom: "3px", fontSize: "14px" }}>
+                {reportError.includes("approved or completed appointment")
+                  ? "You cannot view this patient's reports"
+                  : "Medical Report Notice"}
+              </strong>
+              <span>{reportError}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setReportError("")}
+              aria-label="Dismiss report error"
+              style={{
+                border: "none",
+                background: "transparent",
+                color: "#991B1B",
+                cursor: "pointer",
+                fontSize: "20px",
+                lineHeight: 1,
+              }}
+            >
+              ×
+            </button>
+          </div>
+        )}
 
         {!patientReportsData ? (
           <EmptyState
