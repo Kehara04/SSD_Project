@@ -13,19 +13,37 @@ require.cache[controllerPath] = {
 };
 
 test("internal routes require service credentials and are absent from the public API", async (t) => {
-  const previous = { secret: process.env.AUTH_INTERNAL_SECRET, file: process.env.AUTH_INTERNAL_SECRET_FILE };
-  delete process.env.AUTH_INTERNAL_SECRET_FILE;
-  const secret = "a-test-only-secret-with-at-least-32-characters";
-  process.env.AUTH_INTERNAL_SECRET = secret;
-  const privateServer = require("../src/internalApp").listen(0, "127.0.0.1");
-  const publicServer = require("../src/app").listen(0, "127.0.0.1");
-  await Promise.all([privateServer, publicServer].map(server => new Promise(resolve => server.once("listening", resolve))));
+  const previous = {
+    secret: process.env.AUTH_INTERNAL_SECRET,
+    file: process.env.AUTH_INTERNAL_SECRET_FILE,
+    oidc: process.env.OIDC_SESSION_SECRET,
+  };
+  const servers = [];
   t.after(() => {
-    for (const server of [privateServer, publicServer]) { server.close(); server.closeAllConnections(); }
-    for (const [key, value] of [["AUTH_INTERNAL_SECRET", previous.secret], ["AUTH_INTERNAL_SECRET_FILE", previous.file]]) {
+    for (const server of servers) { server.close(); server.closeAllConnections(); }
+    for (const [key, value] of [
+      ["AUTH_INTERNAL_SECRET", previous.secret],
+      ["AUTH_INTERNAL_SECRET_FILE", previous.file],
+      ["OIDC_SESSION_SECRET", previous.oidc],
+    ]) {
       if (value === undefined) delete process.env[key]; else process.env[key] = value;
     }
   });
+  delete process.env.AUTH_INTERNAL_SECRET_FILE;
+  const secret = "a-test-only-secret-with-at-least-32-characters";
+  process.env.AUTH_INTERNAL_SECRET = secret;
+  // The public app initializes OIDC sessions even when testing unrelated routes.
+  process.env.OIDC_SESSION_SECRET = "a-test-only-oidc-session-secret-at-least-32-characters";
+  const internalApp = require("../src/internalApp");
+  const publicApp = require("../src/app");
+  const startServer = (app) => new Promise((resolve, reject) => {
+    const server = app.listen(0, "127.0.0.1");
+    servers.push(server);
+    server.once("error", reject);
+    server.once("listening", () => resolve(server));
+  });
+  const privateServer = await startServer(internalApp);
+  const publicServer = await startServer(publicApp);
   const routes = [["GET", "/users/test"], ["PATCH", "/users/test/basic"], ["GET", "/users/by-nic/test"], ["GET", "/users/check-nic/test"], ["GET", "/doctors/approved"]];
   const userToken = jwt.sign({ id: "user", role: "admin" }, "test-user-jwt-secret");
   for (const [method, path] of routes) {
