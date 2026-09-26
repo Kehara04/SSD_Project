@@ -23,6 +23,7 @@ import AdminPayments from "./pages/AdminPayments";
 import AdminUsers from "./pages/AdminUsers";
 import NotFound from "./pages/NotFound";
 import SymptomChecker from "./pages/SymptomChecker";
+import GoogleAuthSuccess from "./pages/GoogleAuthSuccess";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import RoleRoute from "./components/RoleRoute";
@@ -32,6 +33,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/auth/google/success" element={<GoogleAuthSuccess />}/>
       <Route path="/register/patient" element={<RegisterPatient />} />
       <Route path="/register/doctor" element={<RegisterDoctor />} />
       <Route path="/register/admin" element={<RegisterAdmin />} />
