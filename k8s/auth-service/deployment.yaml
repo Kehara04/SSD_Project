@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: medichannel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+    spec:
+      containers:
+        - name: auth-service
+          image: kswijesinghe/auth-service:latest
+          ports:
+            - containerPort: 5001
+            - containerPort: 5011
+          env:
+            - name: AUTH_INTERNAL_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: AUTH_INTERNAL_SECRET
+            - name: INTERNAL_PORT
+              value: "5011"
+            - name: PORT
+              value: "5001"
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: AUTH_MONGO_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: JWT_SECRET
+            - name: DOCTOR_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DOCTOR_SERVICE_URL
+            - name: NOTIFICATION_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: NOTIFICATION_SERVICE_URL

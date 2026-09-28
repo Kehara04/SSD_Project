@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: patient-service
+  namespace: medichannel
+spec:
+  selector:
+    app: patient-service
+  ports:
+    - port: 5002
+      targetPort: 5002
+      nodePort: 30012
+  type: NodePort

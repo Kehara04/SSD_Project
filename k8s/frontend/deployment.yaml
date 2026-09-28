@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: medichannel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: kswijesinghe/frontend:latest
+          ports:
+            - containerPort: 5173
+          env:
+            - name: VITE_AUTH_API
+              value: "http://localhost:30011/api"
+            - name: VITE_PATIENT_API
+              value: "http://localhost:30012/api"
+            - name: VITE_DOCTOR_API
+              value: "http://localhost:30010/api"
+            - name: VITE_APPOINTMENT_API
+              value: "http://localhost:30013/api"
+            - name: VITE_TELEMEDICINE_API
+              value: "http://localhost:30014/api"
+            - name: VITE_PAYMENT_API
+              value: "http://localhost:30015/api"
+            - name: VITE_PRESCRIPTION_API
+              value: "http://localhost:30016/api"
+            - name: VITE_AI_API
+              value: "http://localhost:30018/api"
+            - name: VITE_STRIPE_PUBLIC_KEY
+              value: "pk_test_51TEsEuF0ICdELzF1JDA9fbBn6V0lupOcSa3id4C5DUhmmer66Cp6rKYW5AEscvkQhBYjmKchdGCdD2M9VO75oN5U00tI1uXL5B"

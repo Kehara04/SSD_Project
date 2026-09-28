@@ -1,0 +1,26 @@
+name: Local
+variables:
+  - name: authBaseUrl
+    value: http://localhost:5001
+    description: ""
+  - name: patientBaseUrl
+    value: http://localhost:5002
+    description: ""
+  - name: patientAReportId
+    value: 6aaf9fd46e1871a0dd4cb0e0
+    description: ""
+  - name: patientBReportId
+    value: 6aaf963e6e1871a0dd4cb0df
+    description: ""
+  - name: patientANic
+    value: "200476510934"
+    description: ""
+  - name: patientBNic
+    value: "200269503642"
+    description: ""
+  - name: patientAId
+    value: 69d2440a005f0c0cf4dfc392
+    description: ""
+  - name: patientBId
+    value: 69e0968e263e81f1a513f242
+    description: ""

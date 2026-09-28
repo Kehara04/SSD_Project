@@ -1,0 +1,27 @@
+info:
+  name: 07-unauthorized-patient-id-access
+  type: http
+  seq: 7
+
+http:
+  method: GET
+  url: "{{patientBaseUrl}}/api/reports/doctor/patient/{{patientBId}}"
+  headers:
+    - name: Authorization
+      value: Bearer {{doctorAToken}}
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Doctor A cannot access Patient B reports by patient ID", function () {
+          expect(res.getStatus()).to.equal(403);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
+  forwardAuthorizationHeader: false
